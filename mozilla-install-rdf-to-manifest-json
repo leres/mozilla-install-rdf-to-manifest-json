@@ -93,15 +93,17 @@ def process(f):
                     if tag3 == 'Description':
                         for child4 in child3:
                             tag4 = striptag(child4)
-                            #print('app tag', tag4, '=', child4.text)
+                            text4 = child4.text
+                            #print('# app tag', tag4, '=', text4)
                             if tag4 == 'minVersion':
                                 tag4 = 'strict_min_version'
                             elif tag4 == 'maxVersion':
+                                # max_version override
                                 tag4 = 'strict_max_version'
-
-                            # id hack -- do not use the thunderbird id!!
-                            text4 = child4.text
-                            if tag4 == 'id':
+                                if OPTS.maxversion:
+                                    text4 = OPTS.maxversion
+                            elif tag4 == 'id':
+                                # id hack -- do not use the thunderbird id!!
                                 ids.append(child4.text)
                                 ids.sort()
                                 try:
@@ -165,6 +167,8 @@ def main(argv=None):
         help='turn on debugging')
     parser.add_argument('-v', dest='verbose', action='count', default=0,
         help='verbose messages')
+    parser.add_argument('-m', dest='maxversion',
+        help="maximum version override (e.g. '123.*')")
     parser.add_argument('--debugger', action='store_true',
         help=argparse.SUPPRESS)
 
@@ -181,7 +185,9 @@ def main(argv=None):
 
     # Interactive debugging
     if OPTS.debugger:
+        # pylint: disable=C0415
         import pdb
+        # pylint: enable=C0415
         pdb.set_trace()
 
     if not OPTS.file:
